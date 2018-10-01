@@ -6,13 +6,12 @@
 	USC ID : 5986500254
 */
 #include <iostream>
-#include <vector> 
+#include <vector>
 #include <string>
 //	Feel free to include any other C++ standard library if necessary.
 
 using namespace std;
 //	You can add any custom classes / helper functions here.
-
 void printGrid(vector<vector<int> > G, int N) {
 
 	for (int i = 0; i < N; i++) {
@@ -22,8 +21,8 @@ void printGrid(vector<vector<int> > G, int N) {
 		}
 		cout << endl; 
 	}
-
 }
+
 
 int solve(int N, vector<vector<int> > G) {
 /*
@@ -32,69 +31,44 @@ int solve(int N, vector<vector<int> > G) {
 	G: A 2d vector (N*N) indicating the grid.
 		G[0][0] is the top left corner
 		G[N-1][N-1] is the bottom right corner
+	P: prevent Brian's next damage 
+	D: double Brian's next healing 
 	Return: the minimum life Brain needs to complete his task.
-*/ 
-	// Need to find the path that includes the min. amount <= 0
-	// the largest min. amount <<--- BFS but keep track of path with largest min. 
-
-	// MTG Vector 
+*/
 	vector<vector<int> > mtg; 
-	vector<vector<int> > runningSum; 
 	mtg.resize(N); 
-	runningSum.resize(N); 
 	for (int i=0; i<N; i++) {
 		for (int j=0; j<N; j++) {
-			runningSum[i].push_back(0);
 			mtg[i].push_back(0); 
 		}
 	}
+	
+	for (int i = N-1; i >= 0; i--) {
+		for (int j = N-1; j >= 0; j--) {
 
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			if ( (i+1 <= N-1) && (j+1 <= N-1)) {
-				if (max((G[i][j]+G[i+1][j]), (G[i][j]+G[i][j+1])) == G[i][j]+G[i+1][j]) {
-					G[i+1][j] = G[i][j]+G[i+1][j];
-				} else {
-					G[i][j+1] = G[i][j]+G[i][j+1];
+			// base cases 
+			if (j == N-1 && i == N-1) {
+				int temp = 0; 
+				int val = G[i][j];
+				while (val < 1) {
+					temp++;
+					val++; 
 				}
-				
-			} else if ( (i+1 <= N-1) && (j+1 > N-1)) {
-				G[i+1][j] = G[i][j]+G[i+1][j];  
+				mtg[i][j] += temp; 
+			} else if (j == N-1 && i < N-1) {
+				mtg[i][j] = mtg[i+1][j] - G[i][j]; 
+			} else if (j < N-1 && i == N-1) {
+				mtg[i][j] = mtg[i][j+1] - G[i][j]; 
 			} else {
-				G[i][j+1] = G[i][j]+G[i][j+1]; 
-			} 
-
-			printGrid(G, N); 
-			cout << endl; 
-
-			// if (G[i][j] < 0) {
-			// 	mtg[i][j] += (G[i][j] + 1); 
-			// } else if (G[i][j] == 0) {
-			// 	mtg[i][j] += 1; 
-			// } else {
-			// 	mtg[i][j] = 0; 
-			// }
+				mtg[i][j] = min((mtg[i+1][j] - G[i][j]), (mtg[i][j+1] - G[i][j]));
+			}
 		}
+
+		printGrid(mtg, N); 
+		cout << endl; 
 	}
 
-	for (int i=0; i<N; i++) {
-		for (int j=0; j<N; j++) {
-			cout << mtg[i][j];
-			cout << " "; 		
-		}
-	}
-
-	cout << "running sum "; 
-
-	for (int i=0; i<N; i++) {
-		for (int j=0; j<N; j++) {
-			cout << G[i][j];
-			cout << " "; 		
-		}
-	}
-
-
-	return 0; // replace this obviously 
+	return mtg[0][0]; 
 }
 
 //	The main function reads the input and outputs your answer.
